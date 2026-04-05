@@ -1,0 +1,252 @@
+/*
+ * Design System — Apple-style
+ * 低饱和背景、系统无衬线（SF / PingFang）、平滑滚动与实习卡片展开
+ */
+
+:root {
+  --ds-bg: #fbfbfd;
+  --ds-bg-elevated: #ffffff;
+  --ds-bg-muted: #f5f5f7;
+  --ds-text: #1d1d1f;
+  --ds-text-secondary: #6e6e73;
+  --ds-text-tertiary: #86868b;
+  --ds-border: rgba(0, 0, 0, 0.06);
+  --ds-accent: #0071e3;
+  --ds-nav-h: 2.75rem; /* ~44px，对齐 Apple 顶栏 */
+  --ds-ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* 与苹果官网一致：系统无衬线优先（SF / PingFang） */
+  --font-stack:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'PingFang SC',
+    'PingFang TC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Segoe UI',
+    sans-serif;
+}
+
+html {
+  scroll-padding-top: calc(var(--ds-nav-h) + 0.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body.apple-ds {
+  font-family: var(--font-stack);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 标题：无衬线继承 + Apple 式字重与行高（大标题紧、正文松） */
+body.apple-ds h1 {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.05;
+}
+
+body.apple-ds h2 {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+body.apple-ds h3 {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.28;
+}
+
+/* 技能矩阵内小标题为 eyebrow，略轻于卡片标题 */
+body.apple-ds #sec-skills .grid > div > h3 {
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+}
+
+/* 响应式根字号：iPhone → Pad → Desktop */
+body.apple-ds {
+  font-size: 0.9375rem; /* 15px 手机 */
+  line-height: 1.47059; /* 正文行高接近 Apple 中文排版 */
+}
+
+@media (min-width: 768px) {
+  body.apple-ds {
+    font-size: 1rem; /* 16px 平板 */
+  }
+}
+
+@media (min-width: 1024px) {
+  body.apple-ds {
+    font-size: 1.0625rem; /* 17px 桌面 */
+  }
+}
+
+.hero-parallax-layer {
+  background-size: 200% 200%;
+  animation: gradient-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* 实习卡片：Grid 平滑展开（优于 max-height） */
+.expand-outer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s var(--ds-ease-apple);
+}
+
+.expand-outer.is-open {
+  grid-template-rows: 1fr;
+}
+
+.expand-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.expand-panel-inner {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.35s var(--ds-ease-apple),
+    transform 0.35s var(--ds-ease-apple);
+}
+
+.expand-outer.is-open .expand-panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.expand-trigger {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: inherit;
+}
+
+.expand-trigger:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* 鼠标拖尾 */
+#cursor-trail .cursor-dot {
+  position: fixed;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: rgba(0, 113, 227, 0.18);
+  box-shadow: 0 0 10px rgba(0, 113, 227, 0.12);
+  transform: translate(-50%, -50%) scale(1);
+  animation: dot-fade 0.55s ease-out forwards;
+  z-index: 101;
+}
+
+@keyframes dot-fade {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-parallax-layer {
+    animation: none;
+  }
+  #cursor-trail .cursor-dot {
+    animation-duration: 0.01ms !important;
+  }
+  .expand-outer {
+    transition-duration: 0.01ms !important;
+  }
+  .expand-panel-inner {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 顶栏中间菜单横向滚动（窄屏） */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.global-nav-inner .nav-link {
+  color: rgba(29, 29, 31, 0.82);
+  font-size: 0.72rem;
+  letter-spacing: -0.01em;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+@media (min-width: 768px) {
+  .global-nav-inner .nav-link {
+    font-size: 0.75rem;
+  }
+}
+.global-nav-inner .nav-link:hover {
+  color: #1d1d1f;
+}
+
+/* 全站卡片：统一圆角与灰阶阴影 */
+.ds-card {
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+.ds-card-hover:hover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.09);
+  transform: translateY(-10px);
+}
+
+/* 正文块：Apple 常用正文行高 */
+body.apple-ds .type-prose {
+  font-weight: 400;
+  line-height: 1.47059;
+  color: var(--ds-text-secondary);
+}
+
+body.apple-ds .type-prose-muted {
+  font-weight: 400;
+  line-height: 1.47059;
+  color: var(--ds-text-tertiary);
+}
+
+/* 全站搜索浮层 */
+#search-panel.is-visible {
+  pointer-events: auto;
+}
+#search-panel:not(.is-visible) {
+  pointer-events: none;
+}
+
+body.ui-scroll-lock {
+  overflow: hidden;
+}
+
+/* 联系 Modal */
+#contact-modal.is-visible {
+  pointer-events: auto;
+}
+#contact-modal:not(.is-visible) {
+  pointer-events: none;
+}
