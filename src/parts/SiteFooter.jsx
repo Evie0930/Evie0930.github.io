@@ -1,10 +1,24 @@
-export function SiteFooter({ onOpenContact }) {
+export function SiteFooter({ onOpenContact, views, viewsError = false }) {
   return (
     <footer className="border-t border-[rgba(0,0,0,0.06)] bg-[#fbfbfd] px-5 py-8 transition-all duration-300 md:px-8 md:py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 sm:flex-row md:gap-6">
-        <p className="text-[0.6875rem] font-normal text-[#86868b] transition-all duration-300 md:text-xs">
-          © 2026 赵欣宇. All rights reserved.
-        </p>
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 md:gap-6">
+        <div className="flex w-full flex-col items-center gap-2 sm:flex-row sm:justify-between">
+          <p className="text-[0.6875rem] font-normal text-[#86868b] transition-all duration-300 md:text-xs">
+            © 2026 赵欣宇. All rights reserved.
+          </p>
+          <p className="text-[0.75rem] font-normal tracking-[0.01em] text-[#86868b] md:text-[0.8125rem]">
+            {typeof views === 'number' ? (
+              <>
+                这个页面已经被目光停留过{' '}
+                <span className="font-medium text-[#6e6e73]">{views.toLocaleString()}</span> 次
+              </>
+            ) : viewsError ? (
+              '访问统计暂时不可用。'
+            ) : (
+              '正在同步访问统计...'
+            )}
+          </p>
+        </div>
         <div className="flex items-center gap-4 transition-all duration-300 md:gap-5">
           <a
             href="mailto:15368170930@163.com"

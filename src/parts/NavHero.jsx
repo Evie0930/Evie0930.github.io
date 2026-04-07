@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { sectionMotion } from '../motionPresets.js';
+import { filterBarrageRecordsForDisplay, isBarrageInputOverLimit } from '../utils/barrageContent.js';
+import { BARRAGE_VIEWER_HEADER, getOrCreateBarrageViewerToken } from '../utils/barrageViewer.js';
 
 const NAV_LINKS = [
   { href: '#sec-about', label: '关于我' },
@@ -20,11 +22,28 @@ const HERO_VIGNETTE_WIDTH_VW = 88;
 export function NavHero({ onOpenSearch, onOpenContact, searchOpen }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [heroAmbienceVisible, setHeroAmbienceVisible] = useState(false);
+  const [barrageInput, setBarrageInput] = useState('');
+  const [barrages, setBarrages] = useState([]);
+  const [barrageLoading, setBarrageLoading] = useState(true);
+  const [barrageToast, setBarrageToast] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const menuId = useId();
   const reduce = useReducedMotion();
   const heroIntroMotion = sectionMotion(reduce);
+  const viewerToken = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return getOrCreateBarrageViewerToken();
+  }, []);
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  const lanes = useMemo(() => {
+    const bucket = [[], [], []];
+    barrages.forEach((item, idx) => {
+      bucket[idx % 3].push(item);
+    });
+    return bucket;
+  }, [barrages]);
 
   /* 首帧先见 #fbfbfd 实底，再淡入氛围层，避免闪色。若日后首屏使用 background-image，宜在 img/onLoad 完成后再 setHeroAmbienceVisible(true)，与同一策略对齐。 */
   useLayoutEffect(() => {
@@ -51,6 +70,114 @@ export function NavHero({ onOpenSearch, onOpenContact, searchOpen }) {
     document.body.classList.add('ui-scroll-lock');
     return () => document.body.classList.remove('ui-scroll-lock');
   }, [mobileOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3000);
+    (async () => {
+      try {
+        const headers = {};
+        if (viewerToken) {
+          headers[BARRAGE_VIEWER_HEADER] = viewerToken;
+        }
+        const res = await fetch('/api/barrages', { signal: controller.signal, headers });
+        if (res.status === 403) {
+          if (!cancelled) {
+            setBarrages([]);
+            setBarrageLoading(false);
+            setBarrageToast('留言系统正在优化，请稍后再试');
+          }
+          return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const records = filterBarrageRecordsForDisplay(Array.isArray(json?.data) ? json.data : []);
+        if (!cancelled) {
+          setBarrages(records);
+          setBarrageLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setBarrages([]);
+          setBarrageLoading(false);
+        }
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!barrageToast) return undefined;
+    const t = window.setTimeout(() => setBarrageToast(''), 1800);
+    return () => window.clearTimeout(t);
+  }, [barrageToast]);
+
+  const submitBarrage = useCallback(async () => {
+    const content = barrageInput.trim();
+    if (!content || submitting || isBarrageInputOverLimit(barrageInput)) return;
+    setSubmitting(true);
+    try {
+      const token = viewerToken || getOrCreateBarrageViewerToken();
+      const res = await fetch('/api/barrages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, viewer_token: token }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const e = new Error(json?.error || json?.detail || `HTTP ${res.status}`);
+        e.status = res.status;
+        e.detail = json?.detail;
+        e.payload = json;
+        throw e;
+      }
+      const item = json?.data;
+      if (item?.content) {
+        const cleaned = filterBarrageRecordsForDisplay([item])[0];
+        if (cleaned) {
+          setBarrages((prev) => filterBarrageRecordsForDisplay([cleaned, ...prev]).slice(0, 60));
+        }
+        setBarrageInput('');
+        setBarrageToast(item?.is_private_test ? '已发送（仅自己可见）' : '评论已送达 ✨');
+      }
+    } catch (err) {
+      console.dir(err, { depth: 10 });
+      const status = err?.status;
+      const msg = String(err?.message || '');
+      const isPermission =
+        status === 403 ||
+        /permission denied|Database permission denied|RLS|42501|PGRST301/i.test(msg);
+      if (isPermission) {
+        setBarrageToast('留言系统正在优化，请稍后再试');
+      } else if (status === 404) {
+        setBarrageToast('API 未找到（404）：请确认已部署 /api/barrages，且本地 Vite 代理指向 Vercel dev');
+      } else if (String(err?.message || '').includes('content exceeds 20')) {
+        setBarrageToast('最多输入 20 字');
+      } else if (String(err?.message || '').includes('invalid content pattern')) {
+        setBarrageToast('请输入正常中文、英文或表情，不要使用测试串/纯数字');
+      } else if (String(err?.message || '').includes('unsupported characters')) {
+        setBarrageToast('仅支持中文、英文、常见符号和表情');
+      } else if (String(err?.message || '').includes('viewer_token')) {
+        setBarrageToast('测试弹幕需要浏览器本地标识，请刷新重试');
+      } else if (String(err?.message || '').includes('test barrage')) {
+        setBarrageToast('测试弹幕请以 [测试] 开头并输入正文');
+      } else if (err?.name === 'TypeError' && /fetch|network|Failed to fetch/i.test(String(err?.message))) {
+        setBarrageToast('网络未连通：请确认 npm run dev 同时启动了 Vite 与 vercel dev，且代理端口正确');
+      } else {
+        setBarrageToast('发送失败，请稍后重试');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [barrageInput, submitting, viewerToken]);
+
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)');
@@ -198,9 +325,52 @@ export function NavHero({ onOpenSearch, onOpenContact, searchOpen }) {
         id="hero"
         className="relative flex min-h-screen flex-col items-stretch overflow-hidden pt-11 md:pt-12 lg:flex-row"
       >
+        <section
+          aria-label="灵感弹幕"
+          className="pointer-events-none absolute inset-x-0 top-11 z-[4] h-[15vh] max-h-[15vh] min-h-[3.25rem] overflow-hidden bg-transparent md:top-12"
+        >
+          {!barrageLoading &&
+            lanes.map((lane, laneIdx) => {
+              const laneItems = lane.length > 0 ? [...lane, ...lane] : [];
+              if (laneItems.length === 0) return null;
+              return (
+                <div
+                  key={`lane-${laneIdx}`}
+                  className="absolute left-0 right-0 overflow-hidden bg-transparent px-4 md:px-8"
+                  style={{ top: `${8 + laneIdx * 28}%` }}
+                >
+                  <motion.div
+                    className="flex w-max items-center gap-3.5 md:gap-4.5"
+                    initial={{ x: 0 }}
+                    animate={{ x: '-50%' }}
+                    transition={{
+                      duration: 34,
+                      delay: laneIdx * 0.95,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
+                  >
+                    {laneItems.map((item, idx) => (
+                      <div
+                        key={`${item.id}-${idx}`}
+                        className={
+                          item.is_private_test === true
+                            ? "inline-flex max-w-[min(66vw,28rem)] items-center whitespace-nowrap rounded-[16px] border border-[#0071e3]/22 bg-white/12 px-4 py-2.5 text-[0.75rem] font-medium leading-[1.35] tracking-[0.01em] text-[#6e6e73] shadow-[0_4px_14px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.38)] ring-1 ring-[#0071e3]/18 backdrop-blur-[12px] backdrop-saturate-110 md:border-[#0071e3]/28 md:bg-white/22 md:shadow-[0_10px_28px_rgba(15,23,42,0.1),inset_0_1px_0_rgba(255,255,255,0.5)] md:ring-[#0071e3]/22 md:backdrop-saturate-130 [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                            : "inline-flex max-w-[min(66vw,28rem)] items-center whitespace-nowrap rounded-[16px] border border-white/22 bg-white/12 px-4 py-2.5 text-[0.75rem] font-medium leading-[1.35] tracking-[0.01em] text-[#6e6e73] shadow-[0_4px_14px_rgba(15,23,42,0.07),inset_0_1px_0_rgba(255,255,255,0.38)] backdrop-blur-[12px] backdrop-saturate-110 md:border-white/36 md:bg-white/22 md:shadow-[0_10px_28px_rgba(15,23,42,0.1),inset_0_1px_0_rgba(255,255,255,0.5)] md:backdrop-saturate-130 [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                        }
+                      >
+                        {item.content}
+                      </div>
+                    ))}
+                  </motion.div>
+                </div>
+              );
+            })}
+        </section>
+
         <div
           id="sec-insights"
-          className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col items-stretch transition-all duration-300 xl:max-w-[1280px] lg:flex-row lg:items-stretch"
+          className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-1 flex-col items-stretch pt-[calc(3.25rem+15vh+clamp(1rem,4vmin,1.75rem))] transition-all duration-300 md:pt-[calc(3.5rem+15vh+clamp(1.25rem,5vmin,2rem))] xl:max-w-[1280px] lg:flex-row lg:items-stretch lg:pt-[calc(3.5rem+15vh+min(7vh,4.5rem))] lg:pb-[min(10vh,5rem)]"
           data-search-title="开篇"
           data-search-keywords="赵欣宇 Hi 中国传媒大学 模摄 ESTJ 产品经理 品牌 市场 商业分析"
           data-search-text="很高兴认识你 很难定义我 创意改变世界 字节跳动 霸王茶姬 猫眼 LVMH"
@@ -260,6 +430,35 @@ export function NavHero({ onOpenSearch, onOpenContact, searchOpen }) {
             >
               点击联系我
             </button>
+            <div className="mt-4 flex w-full max-w-[22rem] flex-col gap-1.5">
+              <div className="flex w-full items-center gap-2 rounded-full border border-white/24 bg-white/8 p-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-[12px] backdrop-saturate-110 md:border-white/40 md:bg-white/12 md:shadow-[0_10px_30px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.42)] md:backdrop-saturate-125">
+                <input
+                  value={barrageInput}
+                  onChange={(e) => setBarrageInput(Array.from(e.target.value).slice(0, 20).join(''))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      submitBarrage();
+                    }
+                  }}
+                  placeholder="留下你的足迹或鼓励吧"
+                  maxLength={20}
+                  aria-label="弹幕内容，最多 20 字；以 [测试] 开头仅自己可见"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-[0.75rem] leading-[1.35] text-[#6e6e73] placeholder:text-[#8d8d92] focus:outline-none [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                />
+                <button
+                  type="button"
+                  disabled={submitting || !barrageInput.trim() || isBarrageInputOverLimit(barrageInput)}
+                  onClick={submitBarrage}
+                  className="rounded-full border border-white/24 bg-white/14 px-4 py-1.5 text-[0.75rem] font-medium leading-[1.35] text-[#4d4d53] shadow-[0_4px_12px_rgba(15,23,42,0.08)] backdrop-blur-[12px] transition-opacity disabled:cursor-not-allowed disabled:opacity-45 md:border-white/45 md:bg-white/24 md:shadow-[0_6px_20px_rgba(15,23,42,0.12)] [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                >
+                  {submitting ? '发送中…' : '发送弹幕'}
+                </button>
+              </div>
+            </div>
+            {barrageToast ? (
+              <p className="mt-2 text-[0.6875rem] tracking-wide text-[#6e6e73]">{barrageToast}</p>
+            ) : null}
           </motion.div>
         </div>
         <div className="relative min-h-[34vh] flex-1 overflow-hidden pointer-events-none lg:overflow-visible lg:absolute lg:inset-y-0 lg:right-0 lg:flex-none lg:min-h-0 lg:w-[calc(46%+1cm)] xl:w-[calc(48%+1cm)]">

@@ -69,10 +69,10 @@ export function MainSections() {
           <p className="text-[0.9375rem] font-normal leading-[1.5] text-[#424245] md:text-[1rem]">
             世界纷繁复杂、瞬息万变。探索自我是一场旅行，再挖掘、再成长
           </p>
-          <p className="mt-4 text-[0.5625rem] font-normal uppercase leading-[1.28] tracking-[0.06em] text-[#6e6e73] sm:text-[0.59375rem]">
+          <p className="mt-4 text-[0.4375rem] font-normal uppercase leading-[1.28] tracking-[0.06em] text-[#6e6e73] sm:text-[0.46875rem]">
             THE WORLD IS COMPLEX AND CONSTANTLY CHANGING.
           </p>
-          <p className="mt-1.5 text-[0.5625rem] font-normal uppercase leading-[1.28] tracking-[0.06em] text-[#6e6e73] sm:text-[0.59375rem]">
+          <p className="mt-1.5 text-[0.4375rem] font-normal uppercase leading-[1.28] tracking-[0.06em] text-[#6e6e73] sm:text-[0.46875rem]">
             EXPLORING ONESELF IS LIKE A JOURNEY THAT INVOLVES CONSTANT SELF DISCOVERY AND GROWTH.
           </p>
         </div>

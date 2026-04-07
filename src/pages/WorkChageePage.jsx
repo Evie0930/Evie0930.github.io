@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CHAGEE_GALLERY_CARDS } from '../data/workChageeCards.js';
+import { ProjectCardSkeleton } from '../components/ProjectCardSkeleton.jsx';
+import { LOCAL_BACKUP_PROJECTS } from '../constants/localBackupProjects.js';
 import { INTERN_BRANDS } from '../data/internBrands.js';
 
 const chageeBrand = INTERN_BRANDS.find((b) => b.id === 'chagee');
@@ -10,6 +11,68 @@ const CHAGEE_MODAL_BG = `${import.meta.env.BASE_URL}work/chagee-modal-bg.png`;
 const assetBase = import.meta.env.BASE_URL;
 const CHAGEE_GUIYUNNAN_MAIN = `${import.meta.env.BASE_URL}work/chagee-guiyunnan-main.png`;
 const CHAGEE_GUIYUNNAN_CUPS = `${import.meta.env.BASE_URL}work/chagee-guiyunnan-cups.png`;
+const SKELETON_COUNT = 4;
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function paragraphize(text) {
+  return `<p>${escapeHtml(text).replaceAll('\n', '<br/>')}</p>`;
+}
+
+function contentBlocksToHtml(contentBlocks) {
+  if (!Array.isArray(contentBlocks) || contentBlocks.length === 0) return '';
+  return contentBlocks
+    .map((block) => {
+      if (typeof block === 'string') {
+        return `<section>${paragraphize(block)}</section>`;
+      }
+      if (!block || typeof block !== 'object') return '';
+      const heading = block.heading ? `<h3>${escapeHtml(block.heading)}</h3>` : '';
+      const bodyList = Array.isArray(block.body)
+        ? block.body.map((line) => paragraphize(line)).join('')
+        : block.text
+          ? paragraphize(block.text)
+          : '';
+      return `<section>${heading}${bodyList}</section>`;
+    })
+    .join('');
+}
+
+function normalizeProjectRecord(row, index) {
+  const payload = row?.content && typeof row.content === 'object' ? row.content : row || {};
+  const title = payload.title || row?.title || '未命名项目';
+  const tagline = payload.tagline || row?.tagline || '';
+  const mainMetrics = payload.main_metrics || row?.main_metrics || '';
+  const contentBlocks = payload.content_blocks || row?.content_blocks || [];
+  const detailHtml =
+    payload.detail_html ||
+    row?.detail_html ||
+    contentBlocksToHtml(contentBlocks) ||
+    (tagline ? `<section>${paragraphize(tagline)}</section>` : '');
+
+  return {
+    id: String(row?.id ?? payload.id ?? `project-${index + 1}`),
+    visualHint: payload.visual_hint || row?.visual_hint || (row?.company === 'chagee' ? 'logo-slogan' : undefined),
+    title,
+    metric: mainMetrics,
+    subtitle: tagline,
+    subtitleTone: payload.subtitle_tone || row?.subtitle_tone || 'muted',
+    metricTone: mainMetrics ? 'accent' : 'neutral',
+    detailHtml,
+    mainImage: payload.main_image || row?.main_image || null,
+    thumbImage: payload.thumb_image || row?.thumb_image || null,
+    image_url: payload.image_url || row?.image_url || null,
+    orderIndex: Number(payload.order_index ?? row?.order_index ?? index + 1),
+    placeholderLabel: payload.placeholder_label || row?.placeholder_label || '项目示意图',
+  };
+}
 
 function ChageeDetailModal({ card, onClose }) {
   useEffect(() => {
@@ -163,6 +226,22 @@ function VisualTop({ card, logoSrc }) {
     );
   }
 
+  if (card.image_url) {
+    return (
+      <div className="relative flex h-full min-h-0 flex-col bg-[#f5f5f7] p-3">
+        <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#ececf0] bg-white">
+          <img
+            src={card.image_url}
+            alt={card.title}
+            className="h-full w-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex h-full min-h-0 flex-col items-center justify-center bg-[#f5f5f7] px-3">
       <div className="flex h-[78%] w-full max-w-[13rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[rgba(0,0,0,0.12)] bg-white/90">
@@ -264,9 +343,53 @@ export function WorkChageePage() {
   const scrollRef = useRef(null);
   const [active, setActive] = useState(0);
   const [detailCard, setDetailCard] = useState(null);
+  const [cards, setCards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState('');
   const drag = useRef({ down: false, startX: 0, scrollLeft: 0 });
 
   const logoSrc = chageeBrand?.logo ?? '';
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3000);
+
+    (async () => {
+      try {
+        const res = await fetch('/api/projects', { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const records = Array.isArray(json?.data) ? json.data : [];
+        if (!records.length) throw new Error('empty projects');
+        const normalized = records
+          .map((row, index) => normalizeProjectRecord(row, index))
+          .sort((a, b) => (a.orderIndex || 999) - (b.orderIndex || 999));
+        if (cancelled) return;
+        setCards(normalized);
+        setLoading(false);
+      } catch {
+        if (cancelled) return;
+        setCards(LOCAL_BACKUP_PROJECTS);
+        setLoading(false);
+        setToast('已加载本地备份数据');
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const t = window.setTimeout(() => setToast(''), 2400);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
   const updateActiveFromScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -401,9 +524,11 @@ export function WorkChageePage() {
           aria-roledescription="carousel"
           aria-label="霸王茶姬实习故事线卡片"
         >
-          {CHAGEE_GALLERY_CARDS.map((card) => (
-            <GalleryCard key={card.id} card={card} logoSrc={logoSrc} onOpenDetail={setDetailCard} />
-          ))}
+          {loading
+            ? Array.from({ length: SKELETON_COUNT }).map((_, i) => <ProjectCardSkeleton key={`skeleton-${i}`} />)
+            : cards.map((card) => (
+                <GalleryCard key={card.id} card={card} logoSrc={logoSrc} onOpenDetail={setDetailCard} />
+              ))}
         </div>
       </motion.div>
 
@@ -415,13 +540,13 @@ export function WorkChageePage() {
         aria-label="卡片位置"
       >
         <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow-[0_4px_24px_rgba(0,0,0,0.08)] backdrop-blur-md">
-          {CHAGEE_GALLERY_CARDS.map((card, i) => (
+          {(loading ? Array.from({ length: SKELETON_COUNT }) : cards).map((card, i) => (
             <button
-              key={card.id}
+              key={card?.id || `dot-${i}`}
               type="button"
               role="tab"
               aria-selected={active === i}
-              aria-label={`第 ${i + 1} 张：${card.title}`}
+              aria-label={`第 ${i + 1} 张${card?.title ? `：${card.title}` : ''}`}
               className={`h-2 w-2 rounded-full transition-all duration-300 ${
                 active === i ? 'w-6 bg-[#1d1d1f]' : 'bg-[#d2d2d7] hover:bg-[#aeaeb2]'
               }`}
@@ -430,6 +555,11 @@ export function WorkChageePage() {
           ))}
         </div>
       </div>
+      {toast ? (
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-[220] -translate-x-1/2 rounded-full bg-black/70 px-3 py-1.5 text-[0.6875rem] text-white/90 backdrop-blur-sm">
+          {toast}
+        </div>
+      ) : null}
     </motion.main>
   );
 }
