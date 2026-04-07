@@ -131,7 +131,9 @@ export function SearchOverlay({ open, onClose, onNavigate }) {
             ))}
           </ul>
           {matched.length === 0 ? (
-            <p className="py-8 text-center text-[0.8125rem] text-[#86868b] transition-all duration-300">未找到匹配内容</p>
+            <p className="py-8 text-center text-[0.8125rem] text-[#86868b] transition-all duration-300">
+              未找到匹配内容
+            </p>
           ) : null}
         </div>
       </div>

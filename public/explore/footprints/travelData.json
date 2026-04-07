@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "excludeNames": [
+    "西藏自治区",
+    "贵州省",
+    "宁夏回族自治区",
+    "重庆市",
+    "黑龙江省",
+    "吉林省"
+  ],
+  "defaultPhoto": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=640&q=75&auto=format&fit=crop",
+  "entries": {
+    "北京市": { "photo": "", "quote": "" },
+    "天津市": { "photo": "", "quote": "" },
+    "河北省": { "photo": "", "quote": "" },
+    "山西省": { "photo": "", "quote": "" },
+    "内蒙古自治区": { "photo": "", "quote": "" },
+    "辽宁省": { "photo": "", "quote": "" },
+    "上海市": { "photo": "", "quote": "" },
+    "江苏省": { "photo": "", "quote": "" },
+    "浙江省": { "photo": "", "quote": "" },
+    "安徽省": { "photo": "", "quote": "" },
+    "福建省": { "photo": "", "quote": "" },
+    "江西省": { "photo": "", "quote": "" },
+    "山东省": { "photo": "", "quote": "" },
+    "河南省": { "photo": "", "quote": "" },
+    "湖北省": { "photo": "", "quote": "" },
+    "湖南省": { "photo": "", "quote": "" },
+    "广东省": { "photo": "", "quote": "" },
+    "广西壮族自治区": { "photo": "", "quote": "" },
+    "海南省": { "photo": "", "quote": "" },
+    "四川省": { "photo": "", "quote": "" },
+    "云南省": { "photo": "", "quote": "" },
+    "陕西省": { "photo": "", "quote": "" },
+    "甘肃省": { "photo": "", "quote": "" },
+    "青海省": { "photo": "", "quote": "" },
+    "新疆维吾尔自治区": { "photo": "", "quote": "" },
+    "台湾省": { "photo": "", "quote": "" },
+    "香港特别行政区": { "photo": "", "quote": "" },
+    "澳门特别行政区": { "photo": "", "quote": "" }
+  }
+}

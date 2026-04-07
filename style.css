@@ -194,7 +194,9 @@ body.apple-ds {
   color: rgba(29, 29, 31, 0.82);
   font-size: 0.72rem;
   letter-spacing: -0.01em;
-  transition: color 0.3s ease, opacity 0.3s ease;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
 }
 @media (min-width: 768px) {
   .global-nav-inner .nav-link {
@@ -241,6 +243,23 @@ body.apple-ds .type-prose-muted {
 
 body.ui-scroll-lock {
   overflow: hidden;
+}
+
+/* 项目案例：横向吸附滚动 */
+.project-cases-scroll {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+.project-cases-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.project-cases-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.project-case-card {
+  scroll-snap-align: center;
 }
 
 /* 联系 Modal */
