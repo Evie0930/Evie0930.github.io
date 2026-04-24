@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE = 'https://my-website-gamma-silk.vercel.app';
 
 export async function request(url, options = {}) {
   const fullUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
