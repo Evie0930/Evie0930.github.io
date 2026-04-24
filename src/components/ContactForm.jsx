@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { postMessage } from '../api/message.js';
 
 export function ContactForm() {
   const [form, setForm] = useState({ name: '', contact: '', content: '' });
@@ -7,14 +6,8 @@ export function ContactForm() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    setStatus('提交中...');
-    try {
-      await postMessage(form);
-      setStatus('灵感已送达');
-      setForm({ name: '', contact: '', content: '' });
-    } catch {
-      setStatus('提交失败，请稍后重试');
-    }
+    setStatus('弹幕留言功能暂时关闭，可通过邮箱或微信联系我。');
+    setForm({ name: '', contact: '', content: '' });
   }
 
   return (

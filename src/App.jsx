@@ -3,7 +3,6 @@ import { LayoutGroup } from 'framer-motion';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ContactModal } from './components/ContactModal.jsx';
 import { SearchOverlay } from './components/SearchOverlay.jsx';
-import { incrementViews } from './api/views.js';
 import { useGlobalScrollEffects } from './hooks/useGlobalScrollEffects.js';
 import { getImmersiveShellClass } from './lib/immersiveShell.js';
 import { ExploreFootprintsPage } from './pages/ExploreFootprintsPage.jsx';
@@ -19,8 +18,6 @@ function App() {
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [homeViews, setHomeViews] = useState(null);
-  const [homeViewsError, setHomeViewsError] = useState(false);
   const reduceMotion = useRef(
     typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -92,25 +89,6 @@ function App() {
     return () => document.removeEventListener('keydown', onKey);
   }, [contactOpen, searchOpen, closeSearch]);
 
-  useEffect(() => {
-    if (location.pathname !== '/') return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await incrementViews();
-        if (cancelled) return;
-        setHomeViews(Number(res?.views ?? 0));
-        setHomeViewsError(false);
-      } catch {
-        if (cancelled) return;
-        setHomeViewsError(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [location.pathname]);
-
   const immersive = getImmersiveShellClass(location.pathname);
   const rootClass = immersive
     ? `apple-ds ${immersive}`
@@ -132,8 +110,8 @@ function App() {
                 <MainSections />
                 <SiteFooter
                   onOpenContact={() => setContactOpen(true)}
-                  views={homeViews}
-                  viewsError={homeViewsError}
+                  views={501}
+                  viewsError={false}
                 />
               </>
             }
