@@ -57,7 +57,7 @@ export function ExploreInsightsPage() {
 
       <header className="pointer-events-none absolute left-0 right-0 top-0 z-30 flex items-start justify-between gap-4 px-4 pb-2 pt-4 md:px-8 md:pt-5">
         <Link
-          to="/explore"
+          to={{ pathname: '/', hash: 'sec-explore' }}
           className="pointer-events-auto text-[0.875rem] font-normal tracking-wide text-[#8ec8ff]/95 transition-opacity hover:opacity-80"
         >
           ‹ 返回探索

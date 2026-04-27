@@ -25,6 +25,16 @@ const PROJECTS = [
       '面向产品经理与独立开发者：连接代码仓库，自动梳理 Problem Statement、User Journey 与技术架构要点，用 AI 生成可读性强的产品叙事与作品集页面，让仓库里的工作被看见、被理解。',
   },
   {
+    id: 'xiaohongshu-content-engine',
+    tag: 'AI内容生成工作流',
+    title: '小红书爆款笔记工具',
+    summary: '一键实现从商品底图到小红书爆款笔记的全链路自动化生产',
+    fine: '全流程通过条件判断、分支重试与循环批量处理，实现了高稳定性、低成本、可复用的工作流',
+    image: `${base}projects/case-xiaohongshu-workflow.png`,
+    detail:
+      '围绕「商品底图处理 + 内容生成」搭建自动化工作流，打通图片生产、文案生成与发布素材整理，帮助品牌团队在保证质量的前提下大幅提升内容生产效率。',
+  },
+  {
     id: 'crush-skill',
     tag: 'AI 驱动的社交心理建模',
     title: 'crush.skill',
@@ -33,15 +43,6 @@ const PROJECTS = [
     image: `${base}projects/case-crush-skill.png`,
     detail:
       '从代码与数据到可执行的沟通策略：自动解析聊天与社交痕迹，构建对方沟通画像，在发送前用 AI 预演对话路径，降低「发错一句就冷场」的心智成本，强调一键生成、可反复试错的便捷体验。',
-  },
-  {
-    id: 'case-4',
-    tag: '内容与传播',
-    title: '项目案例 · 四',
-    summary: '简介与成果可在此一句话概括，点击卡片查看详情。',
-    fine: '副文案待补充。',
-    image: null,
-    detail: '详情内容待撰写。',
   },
 ];
 
@@ -70,7 +71,7 @@ function ProjectCaseCard({ p, onSelect }) {
         }
       }}
     >
-      <div className="pointer-events-none absolute bottom-10 left-9 right-9 z-10 overflow-hidden rounded-xl">
+      <div className="pointer-events-none absolute bottom-6 left-9 right-9 z-10 overflow-hidden rounded-xl">
         <div className={`relative ${CASE_IMG_BOX} w-full ${imageBgClass}`}>
           {p.image ? (
             <img
@@ -97,7 +98,11 @@ function ProjectCaseCard({ p, onSelect }) {
           </h3>
           <p className="mt-2.5 text-[15px] font-medium leading-[1.7] text-[#3c3c43]">{p.summary}</p>
           {p.fine ? (
-            <p className="mt-2 text-[10px] font-normal leading-[1.5] text-[#6e6e73] sm:text-[11px]">
+            <p
+              className={`mt-2 font-normal leading-[1.5] text-[#6e6e73] ${
+                p.fineClassName || 'text-[11px] sm:text-[12px]'
+              }`}
+            >
               {p.fine}
             </p>
           ) : null}

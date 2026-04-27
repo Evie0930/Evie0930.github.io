@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LayoutGroup } from 'framer-motion';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ContactModal } from './components/ContactModal.jsx';
 import { SearchOverlay } from './components/SearchOverlay.jsx';
+import { ScrollRestoration } from './components/ScrollRestoration.tsx';
+import { LenisProvider } from './context/LenisContext.tsx';
 import { useGlobalScrollEffects } from './hooks/useGlobalScrollEffects.js';
 import { getImmersiveShellClass } from './lib/immersiveShell.js';
 import { ExploreFootprintsPage } from './pages/ExploreFootprintsPage.jsx';
-import { ExploreHubPage } from './pages/ExploreHubPage.jsx';
 import { ExploreInsightsPage } from './pages/ExploreInsightsPage.jsx';
 import { InternCaseScaffoldPage } from './pages/InternCaseScaffoldPage.jsx';
 import { WorkChageePage } from './pages/WorkChageePage.jsx';
@@ -96,39 +97,42 @@ function App() {
     : 'apple-ds min-h-screen overflow-x-hidden bg-[#fbfbfd] font-normal text-[#1d1d1f] antialiased selection:bg-[#0071e3]/15 selection:text-[#1d1d1f]';
 
   return (
-    <div className={rootClass}>
-      <LayoutGroup>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <NavHero
-                  searchOpen={searchOpen}
-                  onOpenSearch={() => setSearchOpen(true)}
-                  onOpenContact={() => setContactOpen(true)}
-                />
-                <MainSections />
-                <SiteFooter
-                  onOpenContact={() => setContactOpen(true)}
-                  views={501}
-                  viewsError={false}
-                />
-              </>
-            }
-          />
-          <Route path="/work/chagee" element={<WorkChageePage />} />
-          <Route path="/work/bytedance" element={<InternCaseScaffoldPage brandId="bytedance" />} />
-          <Route path="/work/lvmh" element={<InternCaseScaffoldPage brandId="lvmh" />} />
-          <Route path="/work/maoyan" element={<InternCaseScaffoldPage brandId="maoyan" />} />
-          <Route path="/explore" element={<ExploreHubPage />} />
-          <Route path="/explore/insights" element={<ExploreInsightsPage />} />
-          <Route path="/explore/footprints" element={<ExploreFootprintsPage />} />
-        </Routes>
-      </LayoutGroup>
-      <SearchOverlay open={searchOpen} onClose={closeSearch} onNavigate={onSearchNavigate} />
-      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
-    </div>
+    <LenisProvider lenisRef={lenisRef}>
+      <div className={rootClass}>
+        <ScrollRestoration />
+        <LayoutGroup>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <NavHero
+                    searchOpen={searchOpen}
+                    onOpenSearch={() => setSearchOpen(true)}
+                    onOpenContact={() => setContactOpen(true)}
+                  />
+                  <MainSections />
+                  <SiteFooter
+                    onOpenContact={() => setContactOpen(true)}
+                    views={501}
+                    viewsError={false}
+                  />
+                </>
+              }
+            />
+            <Route path="/work/chagee" element={<WorkChageePage />} />
+            <Route path="/work/bytedance" element={<InternCaseScaffoldPage brandId="bytedance" />} />
+            <Route path="/work/lvmh" element={<InternCaseScaffoldPage brandId="lvmh" />} />
+            <Route path="/work/maoyan" element={<InternCaseScaffoldPage brandId="maoyan" />} />
+            <Route path="/explore" element={<Navigate to="/" replace />} />
+            <Route path="/explore/insights" element={<ExploreInsightsPage />} />
+            <Route path="/explore/footprints" element={<ExploreFootprintsPage />} />
+          </Routes>
+        </LayoutGroup>
+        <SearchOverlay open={searchOpen} onClose={closeSearch} onNavigate={onSearchNavigate} />
+        <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
+      </div>
+    </LenisProvider>
   );
 }
 

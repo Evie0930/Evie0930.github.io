@@ -97,6 +97,7 @@ const PAGE_CONTENT = {
   },
   lvmh: {
     headline: '从互联网到快消，用数据逻辑讲好品牌叙事。',
+    accent: '#2f2f35',
     cards: [
       {
         id: 'overview',
@@ -113,10 +114,37 @@ const PAGE_CONTENT = {
         image: `${assetBase}work/lvmh-card2-main.png`,
         detailSections: [
           {
-            heading: '行业洞察',
+            heading: '全球及中国香氛市场整体增长态势如何？',
             paragraphs: [
-              '行业调研+4类客群画像，输出竞品白皮书，锁定东方文化差异化。',
-              '协助搭建CRM+小程序，核心单品复购率+25%。',
+              '中国量级在高速增加、且高潜力——渗透率低、教育成本高、但是成长空间大。',
+              '香氛是疫情后唯一保持双位数增长的美妆品类，2024年全球增速达11%，远超护肤、彩妆(均不足5%)。从市场份额来看，中国仅占5%。尽管中国市场规模尚小，但增速亮眼。2025年中国高端香氛零售规模预计达207亿元，是极具潜力的增长赛道。',
+            ],
+          },
+          {
+            heading: '香氛品类的延伸趋势的是什么?',
+            paragraphs: [
+              '生活方式：衣食住行每个阶段都会用到的”仪式感““情绪价值”。',
+              '香氛已渗透生活方方面面，不再局限于传统香水。家居香氛(香薰蜡烛、香氛机、扩香棒、喷雾)洗护香氛(香氛沐浴露、身体乳、洗发水)、车载香氛的消费占比显著提升，香氛已升级为一种全方位的生活方式。',
+            ],
+          },
+          {
+            heading: '香氛的使用场景发生了哪些变化?香氛市场的细分领域及消费者认知是怎样的?',
+            paragraphs: [
+              '过往使用香氛多为社交需求，或为感受文化底蕴彰显身份品位。如今，“取悦自我”成为核心需求，香氛不再是解决问题的品类，而是营造美好想象、提供情绪价值的载体，需要通过情感共鸣打动消费者。',
+            ],
+          },
+          {
+            heading: '在中国市场，香氛品类目前存在哪些待解决的需求或挑战?',
+            paragraphs: [
+              '体验层面：需要兼具探索感与品牌特色的零售空间，同时解决线上试香难的痛点;',
+              '叙事层面：如何用视觉和语言讲好能打动中国消费者的品牌故事与气味描述',
+              '产品层面：在气味、产品形式等方面需要更具创意的突破，满足消费者对“惊喜感“和“探索欲“的期待。',
+            ],
+          },
+          {
+            heading: '创新机会点？',
+            paragraphs: [
+              '通过对竞品分析可得，在文化内涵上均未深度绑定「东方文化」，而LVMH「墨韵」「茶瀑」的书法、茶道灵感是核心差异点，将这一洞察写入内部白皮书，最终白皮书里的「聚焦东方文化、主打高净值文化客群」的建议，被团队采纳，直接指导了后续七门门店书法活动的策划。',
             ],
           },
         ],
@@ -202,20 +230,33 @@ function DetailModal({ detail, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[220] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="placeholder-detail-title">
-      <button type="button" className="absolute inset-0 bg-black/35" aria-label="关闭弹窗" onClick={onClose} />
-      <div className="relative mx-auto my-8 w-[min(94vw,980px)] rounded-[20px] border border-black/10 bg-[#fbfbf8] shadow-[0_18px_54px_rgba(0,0,0,0.24)]">
-        <div className="flex items-center justify-between border-b border-black/10 px-6 py-3">
+      <button type="button" className="absolute inset-0 bg-black/42 backdrop-blur-[4px]" aria-label="关闭弹窗" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mx-auto my-8 w-[min(94vw,980px)] rounded-[20px] border border-black/10 bg-[#fbfbf8]/96 shadow-[0_22px_64px_rgba(0,0,0,0.28)]"
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-[#fbfbf8]/95 px-6 py-3 backdrop-blur-md">
           <h3 id="placeholder-detail-title" className="text-xl font-bold text-[#1f1b19]">
             {detail.title}
           </h3>
-          <button type="button" className="text-2xl text-[#8a8581]" onClick={onClose} aria-label="关闭">
+          <button
+            type="button"
+            className="rounded-full px-2 py-1 text-2xl text-[#8a8581] transition-colors hover:bg-black/5"
+            onClick={onClose}
+            aria-label="关闭"
+          >
             ×
           </button>
         </div>
-        <div className="space-y-6 px-6 py-5 text-sm leading-7 text-[#1f1b19]">
+        <div className="max-h-[min(80vh,44rem)] space-y-6 overflow-y-auto px-6 py-5 pr-4 text-[13px] leading-6 text-[#1f1b19]">
           {(detail.detailSections || []).length ? (
             detail.detailSections.map((section) => (
-              <section key={section.heading} className="space-y-4">
+              <section
+                key={section.heading}
+                className="space-y-4 rounded-2xl border border-black/[0.06] bg-white/55 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+              >
                 {section.heading ? <h4 className="text-base font-bold text-[#1f1b19]">{section.heading}</h4> : null}
                 {section.paragraphs.map((paragraph, index) => (
                   <p key={`${section.heading}-${index}`}>{paragraph}</p>
@@ -230,7 +271,7 @@ function DetailModal({ detail, onClose }) {
             </>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

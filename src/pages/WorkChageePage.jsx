@@ -174,30 +174,43 @@ function ChageeDetailModal({ detail, onClose }) {
     <div className="fixed inset-0 z-[220] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="chagee-detail-title">
       <button
         type="button"
-        className="absolute inset-0 h-full w-full bg-black/35 backdrop-blur-[2px]"
+        className="absolute inset-0 h-full w-full bg-black/42 backdrop-blur-[4px]"
         aria-label="关闭弹窗"
         onClick={onClose}
       />
-      <div className="relative mx-auto my-5 w-[min(94vw,1120px)] overflow-hidden rounded-[24px] border border-black/10 bg-[#fbfbf8] shadow-[0_18px_54px_rgba(0,0,0,0.24)]">
-        <div className="flex items-center justify-between border-b border-black/10 px-6 py-3">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mx-auto my-5 w-[min(94vw,1120px)] overflow-hidden rounded-[24px] border border-black/10 bg-[#fbfbf8]/96 shadow-[0_22px_64px_rgba(0,0,0,0.28)]"
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-[#fbfbf8]/95 px-6 py-3 backdrop-blur-md">
           <h3 id="chagee-detail-title" className="text-[1.4rem] font-bold text-[#1f1b19]">
             {detail.title}
           </h3>
-          <button type="button" className="text-2xl leading-none text-[#8a8581]" onClick={onClose} aria-label="关闭">
+          <button
+            type="button"
+            className="rounded-full px-2 py-1 text-2xl leading-none text-[#8a8581] transition-colors hover:bg-black/5"
+            onClick={onClose}
+            aria-label="关闭"
+          >
             ×
           </button>
         </div>
-        <div className={bodyTypographyClass}>
+        <div className={`${bodyTypographyClass} max-h-[min(80vh,44rem)] overflow-y-auto pr-4`}>
           {detail.sections.map((section) => (
-            <section key={section.heading} className={sectionTypographyClass}>
-              <h4 className={sectionTitleClass}>{section.heading}</h4>
+            <section
+              key={section.heading}
+              className={`${sectionTypographyClass} rounded-2xl border border-black/[0.06] bg-white/55 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]`}
+            >
+              <h4 className={`${sectionTitleClass} mb-1`}>{section.heading}</h4>
               {section.paragraphs.map((paragraph, index) => (
                 <p key={`${section.heading}-${index}`}>{paragraph}</p>
               ))}
             </section>
           ))}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
