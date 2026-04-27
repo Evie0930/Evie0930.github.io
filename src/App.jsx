@@ -8,6 +8,7 @@ import { getImmersiveShellClass } from './lib/immersiveShell.js';
 import { ExploreFootprintsPage } from './pages/ExploreFootprintsPage.jsx';
 import { ExploreHubPage } from './pages/ExploreHubPage.jsx';
 import { ExploreInsightsPage } from './pages/ExploreInsightsPage.jsx';
+import { InternCaseScaffoldPage } from './pages/InternCaseScaffoldPage.jsx';
 import { WorkChageePage } from './pages/WorkChageePage.jsx';
 import { NavHero } from './parts/NavHero.jsx';
 import { MainSections } from './parts/MainSections.jsx';
@@ -117,6 +118,9 @@ function App() {
             }
           />
           <Route path="/work/chagee" element={<WorkChageePage />} />
+          <Route path="/work/bytedance" element={<InternCaseScaffoldPage brandId="bytedance" />} />
+          <Route path="/work/lvmh" element={<InternCaseScaffoldPage brandId="lvmh" />} />
+          <Route path="/work/maoyan" element={<InternCaseScaffoldPage brandId="maoyan" />} />
           <Route path="/explore" element={<ExploreHubPage />} />
           <Route path="/explore/insights" element={<ExploreInsightsPage />} />
           <Route path="/explore/footprints" element={<ExploreFootprintsPage />} />

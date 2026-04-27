@@ -16,7 +16,7 @@ export const INTERN_BRANDS = [
     name: '字节跳动',
     logo: `${base}intern/logos/bytedance.png`,
     logoAlt: '字节跳动',
-    href: null,
+    href: '/work/bytedance',
   },
   {
     id: 'lvmh',
@@ -24,7 +24,7 @@ export const INTERN_BRANDS = [
     name: 'LVMH',
     logo: `${base}intern/logos/lvmh.png`,
     logoAlt: 'LVMH',
-    href: null,
+    href: '/work/lvmh',
   },
   {
     id: 'maoyan',

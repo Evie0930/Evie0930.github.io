@@ -25,15 +25,28 @@ export function ExploreFootprintsPage() {
         const echarts = (await import('echarts')).default;
         await import('echarts-gl');
 
-        const [geoRes, metaRes] = await Promise.all([
-          fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json'),
-          fetch(`${base}explore/footprints/travelData.json`),
-        ]);
+        const geoCandidates = [
+          `${base}explore/footprints/china-full.json`,
+          'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+        ];
+        let geoJson = null;
+        for (const url of geoCandidates) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
+            const json = await res.json();
+            if (json?.type === 'FeatureCollection' && Array.isArray(json?.features)) {
+              geoJson = json;
+              break;
+            }
+          } catch {
+            // try next candidate
+          }
+        }
+        if (!geoJson) throw new Error('地图数据加载失败');
 
-        if (!geoRes.ok) throw new Error('地图数据加载失败');
+        const metaRes = await fetch(`${base}explore/footprints/travelData.json`);
         if (!metaRes.ok) throw new Error('旅行配置加载失败');
-
-        const geoJson = await geoRes.json();
         const travel = await metaRes.json();
         if (disposed) return;
 
@@ -60,10 +73,7 @@ export function ExploreFootprintsPage() {
             };
           });
 
-        chart = echarts.init(el, null, { renderer: 'webgl' });
-        chartRef.current = chart;
-
-        chart.setOption({
+        const option3D = {
           backgroundColor: 'transparent',
           tooltip: { show: false },
           series: [
@@ -105,7 +115,43 @@ export function ExploreFootprintsPage() {
               data,
             },
           ],
-        });
+        };
+        const option2D = {
+          backgroundColor: 'transparent',
+          tooltip: { show: false },
+          series: [
+            {
+              type: 'map',
+              map: 'china',
+              roam: true,
+              itemStyle: {
+                borderColor: '#1a1f2e',
+                borderWidth: 0.5,
+              },
+              emphasis: {
+                itemStyle: {
+                  color: '#c5e0ff',
+                },
+                label: {
+                  show: true,
+                  color: '#fff',
+                  fontSize: 11,
+                },
+              },
+              data,
+            },
+          ],
+        };
+
+        try {
+          chart = echarts.init(el, null, { renderer: 'webgl' });
+          chart.setOption(option3D);
+        } catch {
+          chart?.dispose();
+          chart = echarts.init(el, null, { renderer: 'canvas' });
+          chart.setOption(option2D);
+        }
+        chartRef.current = chart;
 
         if (disposed) {
           chart.dispose();

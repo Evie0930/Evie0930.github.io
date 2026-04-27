@@ -430,34 +430,33 @@ export function NavHero({ onOpenSearch, onOpenContact, searchOpen }) {
             >
               点击联系我
             </button>
-            <div className="mt-4 flex w-full max-w-[22rem] flex-col gap-1.5">
-              <div className="flex w-full items-center gap-2 rounded-full border border-white/24 bg-white/8 p-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-[12px] backdrop-saturate-110 md:border-white/40 md:bg-white/12 md:shadow-[0_10px_30px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.42)] md:backdrop-saturate-125">
-                <input
-                  value={barrageInput}
-                  onChange={(e) => setBarrageInput(Array.from(e.target.value).slice(0, 20).join(''))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      submitBarrage();
-                    }
-                  }}
-                  placeholder="留下你的足迹或鼓励吧"
-                  maxLength={20}
-                  aria-label="弹幕内容，最多 20 字；以 [测试] 开头仅自己可见"
-                  className="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-[0.75rem] leading-[1.35] text-[#6e6e73] placeholder:text-[#8d8d92] focus:outline-none [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
-                />
-                <button
-                  type="button"
-                  disabled={submitting || !barrageInput.trim() || isBarrageInputOverLimit(barrageInput)}
-                  onClick={submitBarrage}
-                  className="rounded-full border border-white/24 bg-white/14 px-4 py-1.5 text-[0.75rem] font-medium leading-[1.35] text-[#4d4d53] shadow-[0_4px_12px_rgba(15,23,42,0.08)] backdrop-blur-[12px] transition-opacity disabled:cursor-not-allowed disabled:opacity-45 md:border-white/45 md:bg-white/24 md:shadow-[0_6px_20px_rgba(15,23,42,0.12)] [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
-                >
-                  {submitting ? '发送中…' : '发送弹幕'}
-                </button>
+            {false ? (
+              <div className="mt-4 flex w-full max-w-[22rem] flex-col gap-1.5">
+                <div className="flex w-full items-center gap-2 rounded-full border border-white/24 bg-white/8 p-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-[12px] backdrop-saturate-110 md:border-white/40 md:bg-white/12 md:shadow-[0_10px_30px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.42)] md:backdrop-saturate-125">
+                  <input
+                    value={barrageInput}
+                    onChange={(e) => setBarrageInput(Array.from(e.target.value).slice(0, 20).join(''))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitBarrage();
+                      }
+                    }}
+                    placeholder="留下你的足迹或鼓励吧"
+                    maxLength={20}
+                    aria-label="弹幕内容，最多 20 字；以 [测试] 开头仅自己可见"
+                    className="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-[0.75rem] leading-[1.35] text-[#6e6e73] placeholder:text-[#8d8d92] focus:outline-none [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                  />
+                  <button
+                    type="button"
+                    disabled={submitting || !barrageInput.trim() || isBarrageInputOverLimit(barrageInput)}
+                    onClick={submitBarrage}
+                    className="rounded-full border border-white/24 bg-white/14 px-4 py-1.5 text-[0.75rem] font-medium leading-[1.35] text-[#4d4d53] shadow-[0_4px_12px_rgba(15,23,42,0.08)] backdrop-blur-[12px] transition-opacity disabled:cursor-not-allowed disabled:opacity-45 md:border-white/45 md:bg-white/24 md:shadow-[0_6px_20px_rgba(15,23,42,0.12)] [font-family:'SF_Pro_Text','PingFang_SC','Helvetica_Neue',Arial,sans-serif]"
+                  >
+                    {submitting ? '发送中…' : '发送弹幕'}
+                  </button>
+                </div>
               </div>
-            </div>
-            {barrageToast ? (
-              <p className="mt-2 text-[0.6875rem] tracking-wide text-[#6e6e73]">{barrageToast}</p>
             ) : null}
           </motion.div>
         </div>

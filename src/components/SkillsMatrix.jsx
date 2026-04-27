@@ -1,6 +1,6 @@
 /** 与 InternLogoMatrix 小方块一致的尺寸与阴影 */
 const skillTileBase =
-  'flex aspect-square w-full max-w-[14.5rem] flex-col rounded-[28px] border border-transparent bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out will-change-transform md:max-w-[16.5rem] md:p-5';
+  'flex w-full max-w-[14.5rem] min-h-[calc(14.5rem+1cm)] flex-col rounded-[28px] border border-transparent bg-white p-4 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out will-change-transform md:max-w-[16.5rem] md:min-h-[calc(16.5rem+1cm)] md:p-5';
 
 const skillTileHover =
   'hover:-translate-y-1 hover:border-black/[0.06] hover:shadow-[0_16px_48px_rgba(0,0,0,0.1),0_4px_16px_rgba(0,0,0,0.04)]';
@@ -45,9 +45,9 @@ function SkillModuleCard({ module }) {
       >
         {module.tag}
       </p>
-      <ul className="flex min-h-0 flex-1 flex-col justify-center gap-1.5 text-[0.6875rem] font-normal leading-[1.45] text-[#424245] md:gap-2 md:text-[0.75rem]">
+      <ul className="flex min-h-0 flex-1 flex-col justify-start gap-1.5 pt-1 text-[0.6875rem] font-normal leading-[1.45] text-[#424245] md:gap-2 md:pt-1.5 md:text-[0.75rem]">
         {module.items.map((line) => (
-          <li key={line} className="flex gap-1.5">
+          <li key={line} className="flex items-start gap-1.5">
             <span
               className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-[#86868b]"
               aria-hidden="true"

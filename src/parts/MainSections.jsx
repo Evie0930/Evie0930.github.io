@@ -92,7 +92,7 @@ export function MainSections() {
             <SectionHeading
               id="sec-intern-title"
               lead="实习经历。"
-              rest="从金融到互联网到快消，用数据逻辑讲好品牌叙事。"
+              rest="从互联网到快消，用数据逻辑讲好品牌叙事。"
             />
           </div>
           <div className="mb-2 ml-6 hidden h-px max-w-[min(100%,14rem)] flex-1 bg-[#1d1d1f]/12 sm:block" />
